@@ -1,0 +1,219 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+
+
+% Variable: Lab Instructor
+\makeatletter \newcommand{\BvrSetLabInstructor}[1]{%
+  \gdef\Bvr@LabInstructor{#1}}
+% default
+\newcommand{\Bvr@LabInstructor}{MRs. NISHA THAKUR}
+% public accessor
+\newcommand{\BvrLabInstructorValue}{\Bvr@LabInstructor}
+\makeatother
+
+% Add subtitle
+\usepackage{titling}
+% -- Set title bold
+\pretitle{\begin{center}\bfseries\fontsize{18bp}{18bp}\selectfont}
+\makeatletter
+\newcommand{\BvrSubtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip 0.5em}%
+}
+\makeatother
+
+% Hints in the section title(s)
+\newcommand{\BvrHint}[1]{%
+  {\normalfont\normalsize\itshape\hfill #1}}
+
+% -----------------------------------------------------
+
+\title{LEXIA: An AI-Powered Accessibility Tool for People with Dyslexia}
+
+\BvrSetLabInstructor{Mrs. NISHA THAKUR}
+
+\BvrSubtitle{%
+  Project Proposal for UCS503P  \\
+  Submitted to: \BvrLabInstructorValue \\ \bfseries
+  Thapar Institute of Engineering and Technology% 
+}
+
+\author{
+  Nandini Sharma, CSED%
+  \thanks{Roll No: \texttt{1024170445}, %
+    Email: \texttt{nsharma7\_be24\@thapar.edu}}
+  \and 
+  Divyadeep Singh, CSED%
+  \thanks{Roll No: \texttt{1024170435}, %
+    Email: \texttt{dsingh\_be24\@thapar.edu}}
+}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Higher-order goal%
+  \BvrHint{\ldots secondary framing}}
+This project aims to advance digital accessibility and educational equity by mitigating reading fatigue and comprehension barriers for individuals experiencing dyslexia and visual reading difficulties. Rather than attempting clinical medical diagnosis, the immediate engineering objective is to build a responsive, deployable web application that transforms complex text into an adaptive, distraction-free, and multimodel reading environment.
+
+\section{Time-to-value %
+\BvrHint{\ldots primary heuristic}}
+\begin{itemize}[leftmargin=0.7cm]
+    \item We will deliver meaningful increments quickly by prototyping the core text simplification and customizable typography reader within a rapid initial iteration.
+    \item We will prioritize fast feedback over perfection by conducting structured usability trials and deploying early via continuous integration (CI) automation.
+    \item Success is defined by end-to-end usability metrics (reading comprehension speed, task completion, interface clarity) achieved in the initial prototype and systematically refined through iterative testing.
+\end{itemize}
+
+\section{Problem Statement}
+Individuals with dyslexia and related reading challenges encounter severe cognitive overload and fatigue when consuming dense digital text (e.g., academic articles, news, long-form documentation). Key pain points include:
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{Visual crowding and tracking fatigue:} Standard web fonts, tight line heights, and unyielding paragraph layouts cause eye-tracking loss and visual distortion.
+    \item \textbf{Vocabulary and syntactical overload:} Dense clauses and polysyllabic words impede comprehension without quick, contextual clarification.
+    \item \textbf{High cognitive friction in assistive tooling:} Existing assistive tools are either paid desktop extensions, ad-cluttered readers, or inflexible screen readers lacking text simplification.
+    \item \textbf{Lack of personalized pacing:} Readers cannot easily switch between varying degrees of reading assistance (e.g., sentence-by-sentence focus vs. key-point summaries).
+\end{itemize}
+
+\textbf{Why this matters now (contextual relevance):} As academic and professional environments increasingly rely on digital content, lightweight and accessible assistive tools are critical to preventing educational disadvantages and cognitive burnout.
+
+\section{Proposed Solution %
+\BvrHint{\ldots Software Proposition}}
+\subsection{Overview}
+Build a \textbf{web-based} accessibility reading platform (\textbf{LEXIA}) composed of:
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{Adaptive Reading Interface:} Highly customizable viewer supporting dyslexia-friendly fonts (e.g., OpenDyslexic, Lexend), dynamic letter/line spacing, background tint adjustments, and reading rulers.
+    \item \textbf{Multi-Tier AI Simplifier:} Backend pipeline utilizing Large Language Model APIs (Google Gemini) to deliver 3 adaptive simplification levels (Basic, Easier, Very Simple) while preserving core meaning.
+    \item \textbf{Contextual Explainer \& Summarizer:} On-demand extraction of key takeaways and instant, context-aware definitions for difficult vocabulary.
+    \item \textbf{Multimodal Assistance:} In-browser text-to-speech (TTS) synchronized with visual sentence tracking and a distraction-free ``Focus Mode''.
+    \item \textbf{User Personalization \& Library:} Authenticated profile managing persistent typographic settings, saved articles, and reading history.
+\end{itemize}
+
+\subsection{Core workflow}
+\begin{enumerate}[leftmargin=0.7cm]
+    \item User pastes text or selects a sample document into the LEXIA portal.
+    \item Backend parses content and triggers the requested transformation (Simplification, Summary, or Word Explanation) via controlled API prompts.
+    \item React frontend renders adapted content in the reading interface according to the user's saved typography preferences.
+    \item User engages interactive tools (Focus Mode, Read Aloud, Word Lookup) and optionally saves the adapted material to their library.
+\end{enumerate}
+
+\subsection{Operational constraints for an educational, web setting}
+\begin{itemize}[leftmargin=0.7cm]
+    \item Keep the interface lightweight and responsive across desktop and tablet browsers without bulky browser extensions.
+    \item Avoid local model training overhead; leverage production-ready LLM APIs with strict prompt engineering and schema validation.
+    \item Implement defensive timeout handling and local fallbacks for seamless evaluation and offline reader functionality.
+\end{itemize}
+
+\section{Solution Approach %
+\BvrHint{\ldots Engineering focus}}
+This project focuses on reliable web engineering, API orchestration, and accessibility UX compliance rather than training custom machine learning models from scratch.
+
+\subsection{AI Orchestration \& Safety Layer %
+\BvrHint{\ldots non-research}}
+The AI service is decoupled into specialized stateless controller routines:
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{Controlled Prompting:} Strict system prompts enforce deterministic vocabulary reduction, sentence splitting, and factual preservation without extraneous hallucinations.
+    \item \textbf{Contextual Word Disambiguation:} Sends selected tokens alongside surrounding sentence context to ensure accurate definitions.
+    \item \textbf{Defensive Validation:} Validates JSON responses and enforces character limits to guarantee fast response times and avoid rate-limiting bottlenecks.
+\end{itemize}
+
+\subsection{Web architecture %
+\BvrHint{\ldots web-based solution}}
+A decoupled 3-tier web architecture:
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{Frontend (React + Tailwind CSS):} Modular UI managing reading state, Web Speech API synthesis, custom typography engines, and local preference caching.
+    \item \textbf{Backend API (Django REST Framework):} Stateless endpoints managing user auth, database persistence, and AI controller orchestration.
+    \item \textbf{Database (SQLite / PostgreSQL):} Relational storage maintaining user credentials, accessibility preference profiles, articles, and versioned AI results.
+\end{itemize}
+
+\subsection{CI/CD and fast delivery enabler}
+CI/CD pipelines will be configured to:
+\begin{itemize}[leftmargin=0.7cm]
+    \item Run automated unit and integration tests (Pytest for backend, React Testing Library for frontend).
+    \item Enforce code formatting, linting, and accessibility audit checks (axe-core / Lighthouse).
+    \item Deploy containerized/hosted builds to staging environments (e.g., Vercel + Render).
+\end{itemize}
+
+\section{Evaluation Criterion %
+\BvrHint{\ldots measurable and attributable}}
+We evaluate success using measurable performance and user-centric accessibility metrics.
+
+\subsection{Primary evaluation metric}
+\textbf{End-to-End Processing Latency (EPL):} Time elapsed from user submission to rendered simplified text in the reading interface.
+\begin{itemize}[leftmargin=0.7cm]
+    \item Target: Median EPL $\le$ 3.0 seconds for standard articles ($\le$ 800 words).
+    \item Attribution: Measured via server-side response logging and frontend performance timestamps.
+\end{itemize}
+
+\subsection{Secondary evaluation metrics}
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{Readability Improvement:} Quantified drop in Flesch-Kincaid Grade Level between source text and simplified output.
+    \item \textbf{Comprehension \& Reading Speed:} Pilot testing measuring time taken to read and answer basic comprehension queries.
+    \item \textbf{Interface Usability Score:} User satisfaction assessed via a standard System Usability Scale (SUS $\ge$ 80 target).
+    \item \textbf{System Availability:} Uptime $\ge$ 99\% during pilot testing windows.
+\end{itemize}
+
+\subsection{Pilot validation plan %
+\BvrHint{\ldots high-level}}
+\begin{itemize}[leftmargin=0.7cm]
+    \item Recruit 10--15 student volunteers with varying reading proficiencies to execute standardized reading tasks across original vs. LEXIA-adapted texts.
+    \item Gather quantitative feedback on font efficacy, focus mode tracking, and vocabulary clarity through pre- and post-test surveys.
+\end{itemize}
+
+\section{Scalability %
+\BvrHint{\ldots with foresight}}
+The application is designed for horizontal scaling and graceful degradation:
+\begin{enumerate}[leftmargin=0.7cm]
+    \item \textbf{Scalable (theoretically):} Decoupled REST architecture allows client-side caching of user preferences and static assets, reducing database overhead. Asynchronous AI request queues prevent blocking web workers during traffic spikes.
+    \item \textbf{Operationally deployable (practically):} Container-ready services deployable on managed PaaS tiers with database connection pooling and environment-isolated secrets management.
+\end{enumerate}
+
+\section{Engine availability heuristic}
+Standard, production-grade tools and libraries will be utilized:
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{Frontend:} React.js, Tailwind CSS, Web Speech API.
+    \item \textbf{Backend:} Python 3, Django, Django REST Framework.
+    \item \textbf{AI/LLM Engine:} Google Gemini API with JSON schema enforcement.
+    \item \textbf{Persistence:} PostgreSQL / SQLite with Django ORM.
+    \item \textbf{Testing \& CI:} Pytest, React Testing Library, GitHub Actions CI runner.
+\end{itemize}
+
+\section{Project scope and deliverables %
+\BvrHint{\ldots iteration-friendly}}
+\subsection{Initial deliverable %
+\BvrHint{\ldots first iteration}}
+\begin{itemize}[leftmargin=0.7cm]
+    \item Core text input portal with live paste functionality.
+    \item Functional reading interface featuring dyslexia-friendly fonts, font resizing, and line-spacing controls.
+    \item AI simplification pipeline (single tier) integrated with backend API.
+    \item Basic Web Speech API read-aloud functionality.
+    \item CI pipeline with unit test verification on every commit.
+\end{itemize}
+
+\subsection{Subsequent deliverables}
+\begin{itemize}[leftmargin=0.7cm]
+    \item Multi-tier simplification selector (Basic, Easier, Very Simple).
+    \item Contextual word explanation popup on text highlight.
+    \item Focus Mode (sentence-by-sentence and line-mask reading).
+    \item User authentication, persistent preference profiles, and saved article history.
+    \item Automated readability scoring dashboard.
+\end{itemize}
+
+\section{Risks and mitigations}
+\begin{itemize}[leftmargin=0.7cm]
+    \item \textbf{AI Hallucination / Distortion:} Enforce conservative prompts with explicit negative constraints (``Do not add external facts''); provide split-view comparison with original text.
+    \item \textbf{API Latency \& Quotas:} Implement client-side loading skeletons and backend response caching for repeated queries.
+    \item \textbf{Browser Inconsistencies in Speech Synthesis:} Utilize standard Web Speech API with fallback controls and clear UI status indicators.
+    \item \textbf{Accessibility Compliance Gaps:} Continuously validate UI elements against WCAG 2.1 AA standards using automated linters and keyboard-navigation tests.
+\end{itemize}
+
+\section{Summary}
+LEXIA is a web-based, AI-augmented accessibility reading platform designed to reduce visual strain and cognitive load for individuals with reading difficulties. Aligning with course objectives, the project prioritizes rapid time-to-value, automated testing via CI/CD, and measurable evaluation metrics (processing latency, readability enhancement, and usability scores) within a robust engineering architecture.
+
+\end{document}
