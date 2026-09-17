@@ -1,0 +1,280 @@
+% Compile this file in the same folder as tietreport.cls.
+% The supplied tietreport.cls is the formatting authority for this report.
+\documentclass[a4paper]{tietreport}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{url}
+\usepackage{pifont}
+
+\TitlePageHeader{UCS503 Software Engineering Project Report}
+\ProjectTitle{LEXIA}
+\ProjectSubTitle{An AI Powered Accessibility Reading Platform for People with Dyslexia}
+\author{%
+  \texttt{1024170445} \quad Nandini Sharma, CSED \\
+  \texttt{1024170435} \quad Divyadeep Singh, CSED%
+}
+\TitlePageSubText{BE Third Year, Computer Science and Engineering}
+\AdvisorName{Mrs. Nisha Thakur}
+\TitlePageFooterText{%
+  \large Project Report \\[0.2cm]
+  \bfseries Computer Science and Engineering Department \\
+  Thapar Institute of Engineering and Technology, Patiala%
+}
+
+\newcommand{\Lexia}{\textbf{LEXIA}}
+\newcommand{\term}[1]{\textbf{#1}}
+\newcommand{\tick}{\ding{51}}
+\renewcommand{\arraystretch}{1.08}
+\setlist[itemize]{leftmargin=0.7cm,itemsep=2pt,topsep=3pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=0.8cm,itemsep=2pt,topsep=3pt,parsep=0pt}
+
+\begin{document}
+\maketitle
+
+\pagenumbering{roman}
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+LEXIA is a web-based accessibility reading platform designed to reduce reading fatigue and comprehension barriers for people with dyslexia and related reading difficulties. The system provides a calm, customizable reading space where users can adjust font, text size, letter spacing, line spacing, page tint, and focus mode. It also provides multi-level AI text simplification, contextual vocabulary support, browser-based read-aloud assistance, and a personal article library.
+
+The project uses a React and Tailwind CSS frontend, a small Django service for secure AI orchestration, Google Gemini for language transformations, and Supabase for authentication, database storage, and file storage. The report presents the problem context, requirements, design, database model, working flow, implementation plan, testing criteria, and twelve-week schedule. The intended outcome is a practical assistive reading system that is responsive, safe to use, and adaptable to individual reading preferences.
+
+\chapter*{Acknowledgement}
+\addcontentsline{toc}{chapter}{Acknowledgement}
+We express our sincere gratitude to Mrs. Nisha Thakur for her guidance and support throughout the planning and development of this project. We also thank the Department of Computer Science and Engineering, Thapar Institute of Engineering and Technology, for providing the academic environment and resources needed to undertake this work.
+
+\tableofcontents
+\pagenumbering{arabic}
+
+\chapter{Introduction}
+\section{Background}
+Digital reading is central to academic and professional life, yet conventional web pages often create unnecessary barriers for readers with dyslexia. Dense paragraphs, rigid typography, visual crowding, difficult vocabulary, and limited reading controls can increase cognitive load and reduce comprehension. Most existing reading tools solve only one part of the problem, such as text-to-speech or font enlargement, without offering a unified and personalized workflow.
+
+\Lexia{} addresses this gap through an accessible reading environment. It allows a user to enter text, adapt its presentation, request a simpler version, listen to it, and save it for later use. The platform is designed as an assistive tool, not as a clinical diagnostic system.
+
+\section{Problem Statement}
+Individuals with dyslexia and related reading challenges may experience eye-tracking fatigue, letter confusion, difficulty processing long sentences, and vocabulary overload while reading digital content. Standard interfaces generally do not allow the reader to control typography, visual contrast, or reading pace in a consistent way. A web-based system is needed that combines adaptive formatting with AI-assisted language support while preserving the intended meaning of source material.
+
+\section{Objectives}
+The objectives of LEXIA are:
+\begin{itemize}
+  \item to provide a dyslexia-friendly reading interface with adjustable visual settings;
+  \item to simplify text at Basic, Easier, and Very Simple levels using controlled AI prompts;
+  \item to provide read-aloud assistance through the Web Speech API;
+  \item to support saved articles, reading history, and persistent user preferences;
+  \item to provide assessments, practice exercises, progress tracking, and supervised views for parents or teachers in subsequent modules; and
+  \item to maintain secure authentication and role-based data access.
+\end{itemize}
+
+\section{Scope}
+The current scope includes user registration and login, adaptive reading controls, text simplification, text-to-speech, article saving, and the database foundation for assessment and progress features. Assessment analysis, recommendations, practice content, parent/teacher linking, and reporting are planned as the next implementation increments. LEXIA does not diagnose dyslexia and does not replace professional educational or clinical support.
+
+\chapter{Requirements Analysis}
+\section{Stakeholders}
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.24\textwidth} p{0.66\textwidth}}
+\toprule
+\textbf{Stakeholder} & \textbf{Need from LEXIA} \\
+\midrule
+Student & A readable, low-distraction environment with controls that support individual reading needs. \\
+Parent or Guardian & A safe view of linked student progress and recommendations. \\
+Teacher & A structured view of linked learners' assessment progress and areas needing practice. \\
+Project Team & A modular and secure architecture that can be tested and extended incrementally. \\
+\bottomrule
+\end{tabular}
+\caption{Primary stakeholders and their needs}
+\end{table}
+
+\section{Functional Requirements}
+\begin{longtable}{p{0.12\textwidth} p{0.28\textwidth} p{0.50\textwidth}}
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+FR1 & Authentication and roles & The system shall support registration and login for Student, Parent/Guardian, and Teacher roles. \\
+FR2 & Reading preferences & The user shall be able to save font, size, letter spacing, line spacing, page tint, and focus-mode preferences. \\
+FR3 & Text input & The user shall be able to paste text and later upload supported documents. \\
+FR4 & AI simplification & The user shall be able to request Basic, Easier, or Very Simple text simplification. \\
+FR5 & Vocabulary help & The user shall be able to request a contextual explanation for a selected difficult word. \\
+FR6 & Read aloud & The user shall be able to start and stop browser-based speech synthesis for displayed text. \\
+FR7 & Library and history & The user shall be able to save articles and view reading history. \\
+FR8 & Assessment & The system shall support word recognition, spelling, reading passage, and optional voice-reading assessments. \\
+FR9 & Progress reports & The system shall store scores, error patterns, recommendations, milestones, and report history. \\
+FR10 & Linked access & A parent or teacher shall view only the progress of students linked through an approved relationship. \\
+\bottomrule
+\caption{Functional requirements}
+\end{longtable}
+
+\section{Non Functional Requirements}
+\begin{itemize}
+  \item \term{Accessibility:} keyboard-operable controls, readable typography, clear focus states, and a calm visual hierarchy.
+  \item \term{Performance:} target median end-to-end simplification latency of at most three seconds for a standard article of up to 800 words.
+  \item \term{Security:} browser code uses only the Supabase publishable key; Gemini and service-role credentials remain server-side.
+  \item \term{Reliability:} errors from the AI service must show a retry-friendly message without exposing internal credentials or provider details.
+  \item \term{Scalability:} the frontend, AI service, and hosted database are independently deployable.
+\end{itemize}
+
+\chapter{System Design}
+\section{Architecture}
+LEXIA follows a lightweight client-service architecture. The React frontend manages user interaction, reading settings, and browser-native speech synthesis. Supabase provides authentication, database tables, Row Level Security policies, and private object storage. A separate Django service verifies the Supabase access token before it calls Gemini. This boundary prevents the Gemini key and Supabase server credentials from reaching the browser.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.26\textwidth} p{0.64\textwidth}}
+\toprule
+\textbf{Layer} & \textbf{Responsibility} \\
+\midrule
+React and Tailwind CSS & Authentication screens, reading interface, accessibility controls, article library views, and assessment screens. \\
+Django AI service & Validates authenticated requests, enforces input limits, forms safe prompts, and calls Gemini. \\
+Google Gemini API & Returns simplified text, summaries, contextual explanations, recommendations, and structured analysis when enabled. \\
+Supabase & Hosts authentication, PostgreSQL data, private file storage, and Row Level Security policies. \\
+Web Speech API & Provides browser-native text-to-speech without storing audio recordings by default. \\
+\bottomrule
+\end{tabular}
+\caption{LEXIA architecture components}
+\end{table}
+
+\section{Simplify Text Flow}
+The Simplify Text use case operates as follows:
+\begin{enumerate}
+  \item The authenticated user pastes or enters text in the reading interface.
+  \item The user selects a simplification level and presses \emph{Simplify Text}.
+  \item The React client sends the text, selected level, and Supabase access token to the Django endpoint.
+  \item Django validates the token through Supabase JWKS, verifies the text length, and creates a constrained Gemini prompt.
+  \item Gemini returns a simplified version that preserves the original meaning.
+  \item Django returns the result to the frontend. The frontend displays it and may save it in the personal library.
+\end{enumerate}
+If the request fails, the application displays a safe error message and gives the user the option to retry. The client never sends Gemini credentials directly to the browser.
+
+\section{Assessment Flow}
+The assessment module is designed around Word Recognition, Spelling, Reading Passage, and Voice-Based Reading activities. A session records the type of assessment, responses, duration, and submission status. Local scoring provides immediate checks where possible. A structured summary may be sent to Gemini through Django to identify error patterns and produce personalized practice recommendations. The saved report then becomes available to the student and, where permitted, linked parent or teacher accounts.
+
+\chapter{Database Design and Security}
+\section{Data Model}
+The Supabase PostgreSQL schema uses the tables below.
+\begin{longtable}{p{0.25\textwidth} p{0.60\textwidth}}
+\toprule
+\textbf{Table} & \textbf{Purpose} \\
+\midrule
+profiles & Stores the authenticated user identity, role, profile information, and reading preferences. \\
+articles & Stores user-owned original text, simplified versions, source type, and optional storage path. \\
+reading\_history & Tracks article reading sessions and completion progress. \\
+assessments & Stores each assessment session, type, timestamps, and status. \\
+answers & Stores question-level responses and correctness information. \\
+scores & Stores the overall score and skill-level breakdown for an assessment. \\
+error\_patterns & Stores identified patterns such as letter reversal or vowel-blending errors. \\
+recommendations & Stores personalized, prioritized practice suggestions. \\
+progress\_history & Stores time-series values for charts and milestones. \\
+student\_links & Stores approved parent/guardian or teacher relationships with a student. \\
+\bottomrule
+\caption{Core data entities}
+\end{longtable}
+
+\section{Access Control}
+Row Level Security is applied to all user data. Students can read and modify their own profiles, articles, reading history, and assessment data. Parent and teacher roles can read data only for students with whom they have an approved link. Article files are stored in a private bucket with file paths scoped to the authenticated owner. Creation of a student link is intentionally handled through an approval or trusted server flow so that an observer cannot attach an arbitrary student account.
+
+\chapter{Implementation Plan}
+\section{Development Method}
+The project follows incremental development. Each increment is independently demonstrable, beginning with the reader flow that provides immediate user value. This approach allows accessibility feedback to influence subsequent work on assessment and progress reporting.
+
+\section{Current Implementation Status}
+The first working increment includes a React reading interface that preserves the project visual prototype, Supabase authentication calls, persistent reading preferences, browser text-to-speech, article saving, a secure Django health endpoint, and an authenticated text simplification endpoint. The database migration defines the complete foundation for user, article, assessment, score, recommendation, progress, and relationship data.
+
+\section{Planned Increments}
+\begin{enumerate}
+  \item Complete the personal library, reading history, upload support, and contextual difficult-word explanation.
+  \item Implement the assessment session, local scoring, results screen, and AI-assisted feedback.
+  \item Implement practice exercises, progress charts, milestones, report history, and linked parent/teacher dashboards.
+  \item Add automated tests, accessibility checks, error monitoring, deployment configuration, and pilot usability evaluation.
+\end{enumerate}
+
+\chapter{Testing and Evaluation}
+\section{Testing Strategy}
+Testing will combine unit, integration, accessibility, and user-oriented evaluation. Frontend tests will check interface state and accessibility controls. Django tests will validate authentication, request validation, prompt construction, and error handling. Integration tests will verify the complete path from the reader screen to Django, Gemini, and the persisted article record. Row Level Security tests will verify that users cannot access another user's data or unapproved student records.
+
+\section{Evaluation Criteria}
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.35\textwidth} p{0.55\textwidth}}
+\toprule
+\textbf{Metric} & \textbf{Target or Method} \\
+\midrule
+Simplification latency & Median end-to-end latency no greater than 3.0 seconds for an article of up to 800 words. \\
+Readability improvement & Compare Flesch-Kincaid Grade Level before and after simplification. \\
+Comprehension and speed & Compare task completion time and short comprehension questions on original and adapted text. \\
+Usability & Conduct a pilot study with 10--15 student volunteers and target a System Usability Scale score of at least 80. \\
+Accessibility & Check keyboard navigation, clear focus indication, readable settings, and contrast against WCAG 2.1 AA expectations. \\
+\bottomrule
+\end{tabular}
+\caption{Evaluation criteria}
+\end{table}
+
+\chapter{Project Schedule}
+\section{Twelve Week Gantt Chart}
+The Gantt chart below shows the planned weeks for each activity. A check mark indicates an active week.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{p{0.32\textwidth}*{12}{>{\centering\arraybackslash}p{0.035\textwidth}}}
+\toprule
+\textbf{Task} & \textbf{W1} & \textbf{W2} & \textbf{W3} & \textbf{W4} & \textbf{W5} & \textbf{W6} & \textbf{W7} & \textbf{W8} & \textbf{W9} & \textbf{W10} & \textbf{W11} & \textbf{W12} \\
+\midrule
+Requirement Analysis & \tick & \tick & & & & & & & & & & \\
+User Research and Personas & \tick & \tick & & & & & & & & & & \\
+UI UX Design and Wireframes & & \tick & \tick & & & & & & & & & \\
+Database Design & & \tick & \tick & & & & & & & & & \\
+Backend Development & & & \tick & \tick & \tick & & & & & & & \\
+Frontend Development & & & \tick & \tick & \tick & \tick & & & & & & \\
+Gemini API Integration & & & & & \tick & \tick & \tick & & & & & \\
+Text to Speech & & & & & & \tick & \tick & & & & & \\
+Accessibility and Focus Mode & & & & & & \tick & \tick & \tick & & & & \\
+Frontend Backend Integration & & & & & & & \tick & \tick & & & & \\
+Testing and Bug Fixing & & & & & & & & & \tick & \tick & & \\
+Usability Testing & & & & & & & & & \tick & \tick & & \\
+Deployment & & & & & & & & & & \tick & & \\
+Documentation & & & & & & & & & & \tick & \tick & \tick \\
+Final Presentation & & & & & & & & & & & \tick & \tick \\
+\bottomrule
+\end{tabular}
+\caption{LEXIA development schedule}
+\label{tab:gantt}
+\end{table}
+
+\chapter{Risks and Mitigation}
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.28\textwidth} p{0.29\textwidth} p{0.33\textwidth}}
+\toprule
+\textbf{Risk} & \textbf{Potential effect} & \textbf{Mitigation} \\
+\midrule
+AI output distortion & Simplified text could change intended meaning. & Use conservative prompts, show original text, and retain user control. \\
+API latency or quota limits & Delayed response or failed transformation. & Enforce input limits, show loading feedback, use retries, and cache suitable results. \\
+Speech compatibility & Browser speech voices and controls vary. & Use Web Speech API capability checks and provide clear stop and retry controls. \\
+Unauthorized data access & Personal reading or assessment data may be exposed. & Apply Supabase Row Level Security and server-side credential isolation. \\
+Accessibility gaps & Controls may not work for all users. & Conduct keyboard, contrast, and usability checks throughout development. \\
+\bottomrule
+\end{tabular}
+\caption{Project risks and planned mitigation}
+\end{table}
+
+\chapter{Conclusion}
+LEXIA proposes a practical, web-based response to common digital reading barriers. By combining adaptable typography, visual reading aids, AI-assisted simplification, text-to-speech, and secure personal data storage, the platform can support different reading preferences without requiring a separate desktop application. The staged development plan prioritizes a usable reader first and then extends it through assessment, practice, progress analysis, and supervised views. The project will be evaluated through performance, readability, accessibility, and pilot usability measures before final deployment.
+
+\begin{thebibliography}{9}
+\bibitem{react} Meta Open Source. \emph{React Documentation}. \url{https://react.dev/}.
+\bibitem{django} Django Software Foundation. \emph{Django Documentation}. \url{https://docs.djangoproject.com/}.
+\bibitem{supabase} Supabase. \emph{Supabase Documentation}. \url{https://supabase.com/docs}.
+\bibitem{gemini} Google AI for Developers. \emph{Gemini API Documentation}. \url{https://ai.google.dev/gemini-api/docs}.
+\bibitem{speech} MDN Web Docs. \emph{Web Speech API}. \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API}.
+\end{thebibliography}
+
+\end{document}
