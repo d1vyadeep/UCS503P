@@ -2,7 +2,6 @@
 
 Name: Nandini  Sharma
 Project: LEXIA AI-Powered Adaptive Reading Companion  
-Role: Frontend Development and UI/UX
 
 - [Week 1: Frontend Setup and UI Planning](./w1-frontend-setup.md)
 - [Week 2: Authentication Screens and Navigation](./w2-auth-navigation.md)
