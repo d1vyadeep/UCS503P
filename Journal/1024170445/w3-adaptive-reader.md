@@ -16,9 +16,3 @@ Build the main reading interface and let users customize how text is displayed.
 - Web Speech API: browser-based text-to-speech.
 - JavaScript: event handling and preference updates.
 
-## Challenges and Learning
-Reading preferences should be adjustable without disrupting the user's place in the text. Browser speech support can vary, so the interface needs a helpful message when read-aloud is unavailable.
-
-## Next Steps
-Connect the simplify action to the backend API and improve loading and error states.
-
