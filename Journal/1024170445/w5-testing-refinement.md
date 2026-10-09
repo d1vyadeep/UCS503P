@@ -17,9 +17,4 @@ Check the main frontend journey, fix usability issues, and document the implemen
 - Manual functional testing: validation of user journeys.
 - Git/GitHub: version control and team coordination.
 
-## Challenges and Learning
-The final interface depends on both frontend behavior and API availability. Testing complete user journeys helped reveal issues that are not obvious when components are tested individually.
-
-## Next Steps
-Address any remaining issues found during review and prepare the final project demonstration.
 
