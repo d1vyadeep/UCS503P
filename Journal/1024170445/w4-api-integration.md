@@ -17,9 +17,5 @@ Connect the reader interface to the text-simplification API and handle its respo
 - Supabase Auth: access-token retrieval.
 - Django REST-style endpoint: text simplification service.
 
-## Challenges and Learning
-Frontend and backend must agree on the endpoint, request fields, and response format. Network errors and server errors need to be handled without leaving the interface in a loading state.
 
-## Next Steps
-Test the main user journey and refine layout, accessibility, and error handling.
 
