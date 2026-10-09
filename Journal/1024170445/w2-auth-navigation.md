@@ -16,9 +16,3 @@ Create the initial account screens and the main navigation flow.
 - Supabase Auth: account creation and sign-in.
 - CSS: layout and responsive presentation.
 
-## Challenges and Learning
-Authentication needs clear feedback for different states, including invalid credentials and accounts that still need email confirmation. The UI must not imply that a user is signed in when authentication has failed.
-
-## Next Steps
-Develop the adaptive reader and its reading preference controls.
-
