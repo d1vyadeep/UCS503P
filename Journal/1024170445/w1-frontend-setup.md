@@ -17,9 +17,4 @@ Set up the frontend workspace and plan the user interface for the adaptive readi
 - Vite: frontend development server and build tooling.
 - Figma (design planning): wireframes and screen-flow planning, if used by the team.
 
-## Challenges and Learning
-The main design challenge was keeping the interface calm and simple while still exposing useful reading controls. I planned to prioritize the reading area and avoid presenting too many actions at once.
-
-## Next Steps
-Build the authentication screens and connect navigation between the main application views.
 
