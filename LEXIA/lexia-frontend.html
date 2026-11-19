@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEXIA — Reading support, built around you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F7F4FC;
+    --bg-tint: #F7F4FC;
+    --surface: #FFFFFF;
+    --surface-alt: #EFE9FB;
+    --ink: #221D34;
+    --ink-soft: #5B5470;
+    --ink-faint: #8A83A0;
+    --primary: #6D5AE6;
+    --primary-dark: #4C3FC7;
+    --primary-tint: #E9E4FB;
+    --teal: #189885;
+    --teal-tint: #DCF3EE;
+    --amber: #E8930C;
+    --amber-tint: #FBEBD2;
+    --coral: #E85C5C;
+    --coral-tint: #FBE2E2;
+    --border: #E3DCF6;
+    --shadow-soft: 0 12px 32px rgba(76, 63, 199, 0.10);
+    --radius-card: 22px;
+    --radius-btn: 12px;
+    --font-display: 'Lexend', sans-serif;
+    --font-body: 'Atkinson Hyperlegible', sans-serif;
+    --step-track: 0em;
+    --step-size: 1;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ height: 100%; }
+  body{
+    margin:0;
+    background: var(--bg-tint);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: calc(16px * var(--step-size));
+    letter-spacing: var(--step-track);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4{ font-family: var(--font-display); color: var(--ink); margin: 0; letter-spacing: 0; }
+  p{ margin: 0; }
+  button{ font-family: var(--font-body); cursor: pointer; }
+  ::selection{ background: var(--primary-tint); color: var(--primary-dark); }
+
+  /* ---------- Layout shell ---------- */
+  .app{ display:flex; min-height:100vh; }
+
+  /* Sidebar */
+  .sidebar{
+    width: 264px;
+    flex-shrink:0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding: 22px 16px;
+    position: sticky;
+    top:0;
+    height:100vh;
+    z-index: 40;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding: 6px 10px 22px; }
+  .brand-mark{ width:38px; height:38px; flex-shrink:0; }
+  .brand-name{ font-family:var(--font-display); font-weight:800; font-size:21px; color: var(--primary-dark); }
+  .brand-sub{ font-size:11.5px; color: var(--ink-faint); margin-top:-2px; }
+
+  .nav-group{ margin-bottom: 18px; }
+  .nav-label{ font-size:12.5px; color: var(--ink-faint); padding: 4px 12px 8px; font-weight:700; }
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding: 10px 12px; border-radius: 12px;
+    color: var(--ink-soft); font-size:15px; font-weight:500;
+    text-decoration:none; background:none; border:none; width:100%; text-align:left;
+    transition: background .15s ease, color .15s ease;
+  }
+  .nav-item svg{ width:19px; height:19px; flex-shrink:0; stroke: currentColor; }
+  .nav-item:hover{ background: var(--primary-tint); color: var(--primary-dark); }
+  .nav-item.active{ background: var(--primary); color: #fff; box-shadow: 0 8px 18px rgba(109,90,230,.28); }
+  .nav-item .badge-dot{ margin-left:auto; width:7px; height:7px; border-radius:50%; background: var(--amber); }
+
+  .sidebar-foot{ margin-top:auto; padding-top: 14px; border-top: 1px solid var(--border); }
+  .user-chip{ display:flex; align-items:center; gap:10px; padding: 8px; border-radius: 12px; }
+  .avatar{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    background: linear-gradient(135deg, var(--primary), #9B8CF0);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:var(--font-display); font-weight:700; font-size:15px;
+  }
+  .user-name{ font-size:14px; font-weight:700; color:var(--ink); }
+  .user-role{ font-size:12px; color: var(--ink-faint); }
+  .logout-btn{ background:none; border:none; color:var(--ink-faint); font-size:13px; margin-left:auto; padding:6px; border-radius:8px; }
+  .logout-btn:hover{ background:var(--coral-tint); color:var(--coral); }
+
+  /* Main column */
+  .main-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px 34px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top:0; z-index:30;
+  }
+  .crumb{ display:flex; flex-direction:column; gap:2px; }
+  .crumb-eyebrow{ font-size:13px; color: var(--ink-faint); font-weight:600; }
+  .crumb-title{ font-size:21px; font-weight:700; font-family:var(--font-display); }
+  .topbar-actions{ display:flex; align-items:center; gap:10px; }
+  .hamburger{ display:none; background:none; border:1px solid var(--border); border-radius:10px; padding:8px; margin-right:8px; }
+  .hamburger svg{ width:20px; height:20px; stroke: var(--ink); }
+
+  .icon-btn{
+    width:40px; height:40px; border-radius: 12px; border:1px solid var(--border);
+    background: var(--surface); display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .icon-btn svg{ width:18px; height:18px; stroke: var(--ink-soft); }
+  .icon-btn:hover{ border-color: var(--primary); }
+  .icon-btn:hover svg{ stroke: var(--primary); }
+
+  .content{ padding: 30px 34px 70px; max-width: 1180px; }
+
+  /* Reading settings popover */
+  .settings-pop{
+    position:absolute; top:50px; right:0; width: 290px;
+    background: var(--surface); border:1px solid var(--border);
+    border-radius: 16px; box-shadow: var(--shadow-soft); padding: 18px;
+    display:none; flex-direction:column; gap:16px; z-index:50;
+  }
+  .settings-pop.open{ display:flex; }
+  .settings-title{ font-size:15px; font-weight:700; font-family:var(--font-display); }
+  .settings-row{ display:flex; flex-direction:column; gap:8px; }
+  .settings-row-label{ font-size:13px; color: var(--ink-soft); font-weight:600; }
+  .seg{ display:flex; background: var(--bg); border-radius: 10px; padding:3px; gap:2px; }
+  .seg button{ flex:1; border:none; background:none; padding:7px 0; font-size:13px; border-radius:8px; color:var(--ink-soft); font-weight:600; }
+  .seg button.active{ background: var(--surface); color: var(--primary-dark); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .tint-row{ display:flex; gap:8px; }
+  .tint-swatch{ width:34px; height:34px; border-radius:10px; border:2px solid transparent; cursor:pointer; }
+  .tint-swatch.active{ border-color: var(--primary); }
+
+  /* ---------- Reusable pieces ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; justify-content:center;
+    padding: 12px 20px; border-radius: var(--radius-btn); font-weight:700; font-size:15px;
+    border: none; transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn svg{ width:17px; height:17px; }
+  .btn:active{ transform: translateY(1px); }
+  .btn-primary{ background: var(--primary); color:#fff; box-shadow: 0 10px 22px rgba(109,90,230,.30); }
+  .btn-primary:hover{ background: var(--primary-dark); }
+  .btn-ghost{ background: var(--surface); color: var(--ink); border:1.5px solid var(--border); }
+  .btn-ghost:hover{ border-color: var(--primary); color: var(--primary-dark); }
+  .btn-soft{ background: var(--primary-tint); color: var(--primary-dark); }
+  .btn-soft:hover{ background: #ddd5fa; }
+  .btn-block{ width:100%; }
+  .btn-lg{ padding:14px 22px; font-size:16px; }
+
+  .tag{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; font-size:12.5px; font-weight:700; }
+  .tag-teal{ background: var(--teal-tint); color: var(--teal); }
+  .tag-amber{ background: var(--amber-tint); color: var(--amber); }
+  .tag-primary{ background: var(--primary-tint); color: var(--primary-dark); }
+  .tag-coral{ background: var(--coral-tint); color: var(--coral); }
+
+  .panel{ background: var(--surface); border:1px solid var(--border); border-radius: var(--radius-card); padding: 24px; }
+  .panel-soft{ background: var(--surface-alt); border-radius: var(--radius-card); padding: 24px; }
+
+  .screen{ display:none; animation: rise .35s ease; }
+  .screen.active{ display:block; }
+  @keyframes rise{ from{ opacity:0; transform: translateY(6px);} to{opacity:1; transform:none;} }
+
+  /* ---------- AUTH SCREEN ---------- */
+  .auth-wrap{
+    min-height:100vh; width:100%;
+    display:grid; grid-template-columns: 1fr 1fr;
+    background: var(--bg);
+  }
+  .auth-side{
+    background: radial-gradient(circle at 20% 20%, #8B7BEE, #4C3FC7 70%);
+    display:flex; flex-direction:column; justify-content:space-between;
+    padding: 48px; color:#fff; position:relative; overflow:hidden;
+  }
+  .auth-side::after{
+    content:""; position:absolute; right:-120px; bottom:-120px; width:340px; height:340px;
+    border-radius:50%; background: rgba(255,255,255,.08);
+  }
+  .auth-brand{ display:flex; align-items:center; gap:12px; }
+  .auth-brand .brand-mark{ width:44px; height:44px; }
+  .auth-brand-name{ font-family:var(--font-display); font-weight:800; font-size:26px; }
+  .auth-quote{ font-family:var(--font-display); font-size: 30px; line-height:1.3; font-weight:600; max-width:420px; }
+  .auth-quote span{ display:block; font-family:var(--font-body); font-weight:400; font-size:16px; opacity:.82; margin-top:14px; }
+  .auth-stat-row{ display:flex; gap:28px; }
+  .auth-stat b{ display:block; font-family:var(--font-display); font-size:26px; }
+  .auth-stat span{ font-size:13px; opacity:.8; }
+
+  .auth-form-side{ display:flex; align-items:center; justify-content:center; padding: 40px; }
+  .auth-card{ width:100%; max-width: 380px; }
+  .auth-tabs{ display:flex; gap:6px; background: var(--surface-alt); padding:4px; border-radius:12px; margin-bottom:26px; }
+  .auth-tab{ flex:1; text-align:center; padding:10px 0; border-radius:9px; border:none; background:none; font-weight:700; color:var(--ink-soft); font-size:14.5px; }
+  .auth-tab.active{ background:var(--surface); color:var(--primary-dark); box-shadow:0 3px 10px rgba(0,0,0,.06); }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13.5px; font-weight:700; color: var(--ink-soft); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid var(--border);
+    font-family:var(--font-body); font-size:15px; background: var(--surface); color:var(--ink);
+  }
+  .field input:focus, .field select:focus{ outline:3px solid var(--primary-tint); border-color: var(--primary); }
+  .auth-alt{ text-align:center; font-size:13.5px; color: var(--ink-faint); margin-top:18px; }
+  .auth-alt a{ color: var(--primary-dark); font-weight:700; text-decoration:none; }
+
+  /* ---------- DASHBOARD ---------- */
+  .hero-panel{
+    background: linear-gradient(120deg, #6D5AE6, #8F7EF3 55%, #A79BF6);
+    border-radius: 26px; padding: 34px 36px; color:#fff; position:relative; overflow:hidden;
+    display:flex; justify-content:space-between; align-items:center; gap:24px; margin-bottom: 26px;
+  }
+  .hero-panel::before{ content:""; position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,.09); right:-60px; top:-70px; }
+  .hero-text h1{ font-size:28px; margin-bottom:8px; color:#fff; }
+  .hero-text p{ max-width:420px; opacity:.92; font-size:15px; }
+  .hero-actions{ display:flex; gap:10px; margin-top:20px; }
+  .hero-actions .btn-ghost{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.4); color:#fff; }
+  .hero-actions .btn-primary{ background:#fff; color: var(--primary-dark); box-shadow:none; }
+  .streak-ring{ flex-shrink:0; width:118px; height:118px; position:relative; display:flex; align-items:center; justify-content:center; }
+  .streak-ring b{ font-family:var(--font-display); font-size:26px; }
+  .streak-ring span{ font-size:11px; opacity:.85; }
+
+  .grid-4{ display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom: 26px; }
+  .stat-card{ background: var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px 20px; }
+  .stat-card .stat-icon{ width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .stat-icon svg{ width:19px; height:19px; }
+  .stat-card b{ display:block; font-family:var(--font-display); font-size:24px; }
+  .stat-card span{ font-size:13px; color: var(--ink-faint); }
+
+  .section-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .section-head h2{ font-size:19px; }
+  .link-more{ font-size:13.5px; font-weight:700; color: var(--primary-dark); text-decoration:none; background:none; border:none; display:flex; align-items:center; gap:4px; }
+
+  .grid-2{ display:grid; grid-template-columns: 1.3fr 1fr; gap:20px; }
+  .quick-list{ display:flex; flex-direction:column; gap:10px; }
+  .quick-row{
+    display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px;
+    border:1px solid var(--border); background:var(--surface); text-align:left; width:100%; border-left: 4px solid var(--primary);
+  }
+  .quick-row .qi{ width:36px; height:36px; border-radius:10px; background: var(--primary-tint); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quick-row .qi svg{ width:18px; height:18px; stroke: var(--primary-dark); }
+  .quick-row b{ display:block; font-size:14.5px; }
+  .quick-row span{ font-size:12.5px; color: var(--ink-faint); }
+  .quick-row:hover{ background: var(--primary-tint); }
+
+  .activity-item{ display:flex; gap:12px; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+  .activity-item:last-child{ border-bottom:none; }
+  .activity-dot{ width:9px; height:9px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+  .activity-item b{ font-size:14px; display:block; }
+  .activity-item span{ font-size:12.5px; color: var(--ink-faint); }
+
+  /* ---------- ASSESSMENT SELECT ---------- */
+  .assess-hero{ display:flex; align-items:center; gap:16px; margin-bottom:26px; }
+  .assess-hero-icon{ width:56px; height:56px; border-radius:16px; background: var(--primary-tint); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .assess-hero-icon svg{ width:26px; height:26px; stroke: var(--primary-dark); }
+  .assess-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:18px; }
+  .assess-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:22px;
+    display:flex; flex-direction:column; gap:12px; text-align:left; width:100%; position:relative;
+  }
+  .assess-card .ac-icon{ width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; }
+  .assess-card .ac-icon svg{ width:22px; height:22px; }
+  .assess-card h3{ font-size:17px; }
+  .assess-card p{ font-size:13.5px; color: var(--ink-soft); line-height:1.55; }
+  .assess-card .ac-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:6px; }
+  .assess-card .ac-time{ font-size:12.5px; color: var(--ink-faint); font-weight:600; }
+  .assess-card:hover{ border-color: var(--primary); box-shadow: var(--shadow-soft); transform: translateY(-2px); transition: .15s ease; }
+
+  /* ---------- ASSESSMENT SESSION ---------- */
+  .session-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .progress-track{ height:8px; background: var(--surface-alt); border-radius:999px; overflow:hidden; flex:1; margin: 0 18px; }
+  .progress-fill{ height:100%; background: linear-gradient(90deg, var(--primary), #9B8CF0); border-radius:999px; width:42%; transition: width .4s ease; }
+  .session-step-label{ font-size:13px; font-weight:700; color: var(--ink-faint); white-space:nowrap; }
+
+  .passage-card{ background: var(--surface); border:1px solid var(--border); border-radius:22px; padding:32px; margin-bottom:20px; }
+  .passage-card p{ font-size: calc(19px * var(--step-size)); line-height:1.9; color: var(--ink); max-width: 640px; }
+  .passage-card mark{ background: var(--amber-tint); color: var(--ink); border-radius:4px; padding:0 3px; }
+
+  .mic-row{ display:flex; align-items:center; gap:16px; padding-top:18px; border-top:1px dashed var(--border); }
+  .mic-btn{
+    width:56px; height:56px; border-radius:50%; background: var(--primary); border:none;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow: 0 10px 22px rgba(109,90,230,.32);
+  }
+  .mic-btn svg{ width:24px; height:24px; stroke:#fff; }
+  .mic-visual{ display:flex; align-items:center; gap:3px; height:28px; }
+  .mic-visual i{ width:3px; border-radius:3px; background: var(--primary); display:block; }
+  .session-tools{ display:flex; gap:10px; }
+  .tool-chip{ display:flex; align-items:center; gap:7px; padding:9px 14px; border-radius:11px; background: var(--surface); border:1px solid var(--border); font-size:13.5px; font-weight:600; color: var(--ink-soft); }
+  .tool-chip svg{ width:15px; height:15px; }
+
+  .session-footer{ display:flex; justify-content:space-between; align-items:center; }
+  .step-dots{ display:flex; gap:7px; }
+  .step-dots i{ width:8px; height:8px; border-radius:50%; background: var(--border); display:block; }
+  .step-dots i.done{ background: var(--teal); }
+  .step-dots i.now{ background: var(--primary); width:20px; border-radius:5px; }
+
+  /* ---------- SUBMIT SCREEN ---------- */
+  .submit-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding: 40px 20px; }
+  .submit-icon{ width:88px; height:88px; border-radius:26px; background: var(--amber-tint); display:flex; align-items:center; justify-content:center; margin-bottom:22px; }
+  .submit-icon svg{ width:40px; height:40px; stroke: var(--amber); }
+  .submit-wrap h1{ font-size:24px; margin-bottom:10px; }
+  .submit-wrap p{ color: var(--ink-soft); max-width:440px; margin-bottom:26px; }
+  .submit-summary{ display:flex; gap:14px; margin-bottom:28px; flex-wrap:wrap; justify-content:center; }
+  .summary-chip{ background: var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 18px; min-width:120px; }
+  .summary-chip b{ display:block; font-family:var(--font-display); font-size:19px; }
+  .summary-chip span{ font-size:12px; color: var(--ink-faint); }
+
+  /* ---------- ANALYSIS SCREEN ---------- */
+  .analysis-wrap{ display:flex; flex-direction:column; align-items:center; padding: 36px 20px; }
+  .brain-orb{ width:120px; height:120px; border-radius:50%; background: conic-gradient(from 0deg, #6D5AE6, #A79BF6, #6D5AE6); display:flex; align-items:center; justify-content:center; margin-bottom:22px; animation: spin 3.2s linear infinite; }
+  .brain-orb-inner{ width:96px; height:96px; border-radius:50%; background: var(--surface); display:flex; align-items:center; justify-content:center; }
+  .brain-orb-inner svg{ width:44px; height:44px; stroke: var(--primary-dark); }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .analysis-wrap h1{ font-size:22px; margin-bottom:6px; }
+  .analysis-wrap > p{ color: var(--ink-faint); margin-bottom:30px; }
+  .analysis-checklist{ width:100%; max-width:460px; display:flex; flex-direction:column; gap:10px; }
+  .check-row{ display:flex; align-items:center; gap:13px; padding:13px 16px; border-radius:14px; background: var(--surface); border:1px solid var(--border); }
+  .check-mark{ width:24px; height:24px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition: all .25s ease; }
+  .check-mark svg{ width:13px; height:13px; stroke:#fff; opacity:0; transition: opacity .2s ease; }
+  .check-row.done .check-mark{ background: var(--teal); border-color: var(--teal); }
+  .check-row.done .check-mark svg{ opacity:1; }
+  .check-row.active .check-mark{ border-color: var(--primary); }
+  .check-row span{ font-size:14.5px; font-weight:600; color: var(--ink-soft); }
+  .check-row.done span, .check-row.active span{ color: var(--ink); }
+
+  /* ---------- RESULTS ---------- */
+  .score-hero{ display:flex; gap:26px; align-items:center; background: var(--surface); border:1px solid var(--border); border-radius:24px; padding:28px; margin-bottom:22px; }
+  .donut-wrap{ position:relative; width:150px; height:150px; flex-shrink:0; }
+  .donut-wrap b{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--font-display); font-size:30px; }
+  .donut-wrap span{ position:absolute; bottom:34px; left:0; right:0; text-align:center; font-size:11.5px; color: var(--ink-faint); }
+  .score-hero-text h2{ font-size:20px; margin-bottom:6px; }
+  .score-hero-text p{ color: var(--ink-soft); font-size:14.5px; max-width:460px; }
+
+  .breakdown-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:16px; margin-bottom:22px; }
+  .bd-card{ background: var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px; }
+  .bd-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .bd-card-head b{ font-size:14.5px; }
+  .bd-bar-track{ height:9px; background: var(--surface-alt); border-radius:999px; overflow:hidden; margin-bottom:8px; }
+  .bd-bar-fill{ height:100%; border-radius:999px; }
+  .bd-card small{ color: var(--ink-faint); font-size:12.5px; }
+
+  .pattern-panel{ background: var(--surface); border:1px solid var(--border); border-radius:20px; padding:24px; }
+  .pattern-row{ display:flex; align-items:flex-start; gap:12px; padding:13px 0; border-bottom:1px dashed var(--border); }
+  .pattern-row:last-child{ border-bottom:none; }
+  .pattern-tag{ flex-shrink:0; }
+  .pattern-row p{ font-size:14px; color: var(--ink-soft); line-height:1.55; }
+  .pattern-row b{ color: var(--ink); }
+
+  /* ---------- RECOMMENDATIONS ---------- */
+  .rec-grid{ display:flex; flex-direction:column; gap:14px; }
+  .rec-card{ display:flex; gap:16px; background: var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px; align-items:flex-start; }
+  .rec-icon{ width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .rec-icon svg{ width:21px; height:21px; }
+  .rec-card h3{ font-size:15.5px; margin-bottom:4px; }
+  .rec-card p{ font-size:13.5px; color: var(--ink-soft); line-height:1.55; margin-bottom:10px; }
+  .rec-foot{ display:flex; gap:8px; align-items:center; }
+
+  /* ---------- PRACTICE ---------- */
+  .filter-row{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .filter-chip{ padding:9px 16px; border-radius:999px; background: var(--surface); border:1.5px solid var(--border); font-size:13.5px; font-weight:700; color: var(--ink-soft); }
+  .filter-chip.active{ background: var(--primary); border-color: var(--primary); color:#fff; }
+  .practice-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; }
+  .practice-card{ background: var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; }
+  .practice-thumb{ height:90px; display:flex; align-items:center; justify-content:center; }
+  .practice-thumb svg{ width:34px; height:34px; }
+  .practice-body{ padding:16px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .practice-body h3{ font-size:15px; }
+  .practice-body p{ font-size:12.5px; color: var(--ink-faint); }
+  .practice-meta{ display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:8px; }
+  .practice-meta span{ font-size:12px; color: var(--ink-faint); font-weight:600; }
+
+  /* ---------- PROGRESS ---------- */
+  .progress-panel{ background: var(--surface); border:1px solid var(--border); border-radius:22px; padding:28px; margin-bottom:22px; }
+  .progress-legend{ display:flex; gap:18px; margin-top:14px; }
+  .legend-item{ display:flex; align-items:center; gap:7px; font-size:13px; color: var(--ink-soft); font-weight:600; }
+  .legend-dot{ width:9px; height:9px; border-radius:50%; }
+  .milestone-grid{ display:grid; grid-template-columns: repeat(4,1fr); gap:14px; }
+  .milestone-card{ background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; text-align:center; }
+  .milestone-card.locked{ opacity:.5; }
+  .milestone-card .m-icon{ width:38px; height:38px; border-radius:50%; background: var(--primary-tint); display:flex; align-items:center; justify-content:center; margin:0 auto 10px; }
+  .milestone-card .m-icon svg{ width:18px; height:18px; stroke: var(--primary-dark); }
+  .milestone-card b{ display:block; font-size:13px; }
+  .milestone-card span{ font-size:11.5px; color: var(--ink-faint); }
+
+  /* ---------- REPORTS ---------- */
+  .report-table{ background: var(--surface); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+  .report-row{ display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 100px; align-items:center; padding:16px 22px; border-bottom:1px solid var(--border); gap:10px; }
+  .report-row.head{ background: var(--surface-alt); font-size:12.5px; font-weight:700; color: var(--ink-faint); padding:13px 22px; }
+  .report-row:last-child{ border-bottom:none; }
+  .report-row b{ font-size:14px; display:block; }
+  .report-row span{ font-size:12.5px; color: var(--ink-faint); }
+  .dl-btn{ display:flex; align-items:center; gap:6px; background:var(--surface-alt); border:none; padding:8px 12px; border-radius:9px; font-size:12.5px; font-weight:700; color: var(--primary-dark); }
+  .dl-btn svg{ width:14px; height:14px; }
+
+  /* ---------- PROFILE ---------- */
+  .profile-grid{ display:grid; grid-template-columns: 300px 1fr; gap:20px; }
+  .profile-card{ background: var(--surface); border:1px solid var(--border); border-radius:22px; padding:26px; text-align:center; height:max-content; }
+  .profile-avatar{ width:88px; height:88px; border-radius:50%; margin:0 auto 14px; background: linear-gradient(135deg, var(--primary), #9B8CF0); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-display); font-weight:700; font-size:30px; }
+  .profile-card h3{ font-size:17px; margin-bottom:2px; }
+  .profile-card p{ font-size:13px; color: var(--ink-faint); margin-bottom:16px; }
+  .pref-list{ text-align:left; display:flex; flex-direction:column; gap:10px; margin-top:16px; padding-top:16px; border-top:1px dashed var(--border); }
+  .pref-item{ display:flex; justify-content:space-between; font-size:13px; }
+  .pref-item span:first-child{ color: var(--ink-faint); }
+  .pref-item span:last-child{ font-weight:700; }
+  .form-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  .form-grid .field.full{ grid-column: 1 / -1; }
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px dashed var(--border); }
+  .toggle-row:last-child{ border-bottom:none; }
+  .toggle-row b{ font-size:14.5px; display:block; }
+  .toggle-row span{ font-size:12.5px; color: var(--ink-faint); }
+  .switch{ width:44px; height:25px; border-radius:999px; background: var(--border); position:relative; border:none; flex-shrink:0; }
+  .switch::after{ content:""; position:absolute; width:19px; height:19px; border-radius:50%; background:#fff; top:3px; left:3px; transition: transform .18s ease; box-shadow:0 1px 4px rgba(0,0,0,.2); }
+  .switch.on{ background: var(--primary); }
+  .switch.on::after{ transform: translateX(19px); }
+
+  /* ---------- Overlay / mobile ---------- */
+  .overlay{ display:none; position:fixed; inset:0; background:rgba(20,15,45,.4); z-index:35; }
+  .overlay.open{ display:block; }
+
+  @media (max-width: 1040px){
+    .assess-grid{ grid-template-columns: 1fr; }
+    .grid-4{ grid-template-columns: repeat(2,1fr); }
+    .grid-2{ grid-template-columns: 1fr; }
+    .breakdown-grid{ grid-template-columns: 1fr; }
+    .practice-grid{ grid-template-columns: repeat(2,1fr); }
+    .milestone-grid{ grid-template-columns: repeat(2,1fr); }
+    .profile-grid{ grid-template-columns: 1fr; }
+    .auth-wrap{ grid-template-columns: 1fr; }
+    .auth-side{ display:none; }
+  }
+  @media (max-width: 760px){
+    .sidebar{ position:fixed; left:-280px; transition: left .2s ease; box-shadow: 0 0 40px rgba(0,0,0,.2); }
+    .sidebar.open{ left:0; }
+    .hamburger{ display:flex; }
+    .content{ padding: 22px 16px 60px; }
+    .topbar{ padding: 14px 16px; }
+    .practice-grid{ grid-template-columns: 1fr; }
+    .report-row{ grid-template-columns: 1fr 1fr; row-gap:6px; }
+    .report-row.head{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =================== AUTH SCREEN =================== -->
+<div id="authScreen">
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <div class="auth-brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M24 8C15 8 8 15 8 23c0 10 8 15 16 15s16-5 16-15c0-8-7-15-16-15Z" stroke="#fff" stroke-width="2.2"/><path d="M24 13v22M24 13c-3 0-7 2-7 6s4 5 7 5 7 1 7 5-4 6-7 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="auth-brand-name">LEXIA</span>
+      </div>
+      <div>
+        <p class="auth-quote">Reading built around how your mind actually works.
+          <span>LEXIA turns short assessments into a personal picture of your reading — then adapts practice to fit it.</span>
+        </p>
+        <div class="auth-stat-row" style="margin-top:34px;">
+          <div class="auth-stat"><b>12,400+</b><span>learners supported</span></div>
+          <div class="auth-stat"><b>94%</b><span>feel more confident</span></div>
+          <div class="auth-stat"><b>4.9/5</b><span>from families</span></div>
+        </div>
+      </div>
+      <div style="font-size:13px; opacity:.75;">Designed with dyslexia specialists &amp; special-education teachers</div>
+    </div>
+
+    <div class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log in</button>
+          <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <form id="loginForm" onsubmit="return goToApp(event)">
+          <div class="field"><label for="li-email">Email address</label><input id="li-email" type="email" placeholder="you@example.com" required></div>
+          <div class="field"><label for="li-pass">Password</label><input id="li-pass" type="password" placeholder="••••••••" required></div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Log in to LEXIA</button>
+        </form>
+
+        <form id="registerForm" style="display:none;" onsubmit="return goToApp(event)">
+          <div class="field"><label for="re-name">Full name</label><input id="re-name" type="text" placeholder="Aanya Sharma" required></div>
+          <div class="field"><label for="re-email">Email address</label><input id="re-email" type="email" placeholder="you@example.com" required></div>
+          <div class="field"><label for="re-role">I am a</label>
+            <select id="re-role"><option>Student</option><option>Parent / Guardian</option><option>Teacher / Tutor</option></select>
+          </div>
+          <div class="field"><label for="re-pass">Create password</label><input id="re-pass" type="password" placeholder="••••••••" required></div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Create my account</button>
+        </form>
+
+        <p class="auth-alt" id="authAltText">New to LEXIA? <a href="#" onclick="switchAuthTab('register'); return false;">Create an account</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MAIN APP =================== -->
+<div class="app" id="appShell" style="display:none;">
+  <div class="overlay" id="overlay" onclick="toggleSidebar(false)"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M24 8C15 8 8 15 8 23c0 10 8 15 16 15s16-5 16-15c0-8-7-15-16-15Z" stroke="#6D5AE6" stroke-width="2.2"/><path d="M24 13v22M24 13c-3 0-7 2-7 6s4 5 7 5 7 1 7 5-4 6-7 6" stroke="#6D5AE6" stroke-width="2" stroke-linecap="round"/></svg>
+      <div><div class="brand-name">LEXIA</div><div class="brand-sub">Reading, made for you</div></div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item" data-screen="dashboard" onclick="showScreen('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" stroke-width="2" stroke-linejoin="round"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-screen="profile" onclick="showScreen('profile')">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke-width="2"/><path d="M5 20c1.3-3.6 4.1-5.5 7-5.5s5.7 1.9 7 5.5" stroke-width="2" stroke-linecap="round"/></svg>
+        Profile
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Assessment</div>
+      <button class="nav-item" data-screen="assessSelect" onclick="showScreen('assessSelect')">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="12" height="17" rx="2" stroke-width="2"/><path d="M9 3.5h6v2H9z" stroke-width="2"/><path d="M9 11h6M9 14.5h6M9 17.5h3.5" stroke-width="2" stroke-linecap="round"/></svg>
+        Take assessment
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Insights</div>
+      <button class="nav-item" data-screen="results" onclick="showScreen('results')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 20V10M12 20V4M19 20v-7" stroke-width="2.2" stroke-linecap="round"/></svg>
+        Performance report
+      </button>
+      <button class="nav-item" data-screen="recommend" onclick="showScreen('recommend')">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke-width="2"/><circle cx="12" cy="12" r="0.6" stroke-width="2.4"/></svg>
+        Recommendations
+      </button>
+      <button class="nav-item" data-screen="practice" onclick="showScreen('practice')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" stroke-width="2" stroke-linejoin="round"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5v-13Z" stroke-width="2" stroke-linejoin="round"/></svg>
+        Practice exercises
+      </button>
+      <button class="nav-item" data-screen="progress" onclick="showScreen('progress')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="m4 16 5-6 4 3 7-8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h5v5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Track progress
+      </button>
+      <button class="nav-item" data-screen="reports" onclick="showScreen('reports')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5A1.5 1.5 0 0 1 7 3.5Z" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 12h5M9.5 15h5M9.5 9h2" stroke-width="1.8" stroke-linecap="round"/></svg>
+        View reports
+      </button>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <div class="avatar">AS</div>
+        <div><div class="user-name">Aanya Sharma</div><div class="user-role">Student</div></div>
+        <button class="logout-btn" title="Log out" onclick="logOut()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="topbar">
+      <div style="display:flex; align-items:center;">
+        <button class="hamburger" onclick="toggleSidebar(true)">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+        </button>
+        <div class="crumb">
+          <div class="crumb-eyebrow" id="crumbEyebrow">Overview</div>
+          <div class="crumb-title" id="crumbTitle">Welcome back, Aanya</div>
+        </div>
+      </div>
+      <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" onclick="toggleSettings()" title="Reading comfort settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.5-2-3.4-2.3.9a8 8 0 0 0-1.7-1L15 3h-4l-.4 2.5a8 8 0 0 0-1.7 1l-2.3-.9-2 3.4L6.6 11a7.9 7.9 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9a8 8 0 0 0 1.7 1L11 21h4l.4-2.5a8 8 0 0 0 1.7-1l2.3.9 2-3.4-2-1.5Z" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="settings-pop" id="settingsPop">
+          <div class="settings-title">Reading comfort</div>
+          <div class="settings-row">
+            <div class="settings-row-label">Text size</div>
+            <div class="seg" id="segSize">
+              <button data-v="0.9" onclick="setTextSize(0.9,this)">A</button>
+              <button data-v="1" class="active" onclick="setTextSize(1,this)">A</button>
+              <button data-v="1.18" onclick="setTextSize(1.18,this)">A</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Letter spacing</div>
+            <div class="seg" id="segTrack">
+              <button data-v="0" class="active" onclick="setTracking(0,this)">Normal</button>
+              <button data-v="0.04" onclick="setTracking(0.04,this)">Wide</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Page tint</div>
+            <div class="tint-row">
+              <div class="tint-swatch active" style="background:#F7F4FC;" onclick="setTint('#F7F4FC', this)"></div>
+              <div class="tint-swatch" style="background:#FDF6E3;" onclick="setTint('#FDF6E3', this)"></div>
+              <div class="tint-swatch" style="background:#E9F5EC;" onclick="setTint('#E9F5EC', this)"></div>
+              <div class="tint-swatch" style="background:#EAF1FB;" onclick="setTint('#EAF1FB', this)"></div>
+            </div>
+          </div>
+        </div>
+        <div class="avatar" style="width:36px; height:36px; font-size:13px;">AS</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ============ DASHBOARD ============ -->
+      <section class="screen active" id="screen-dashboard">
+        <div class="hero-panel">
+          <div class="hero-text">
+            <h1>Ready for today's session, Aanya?</h1>
+            <p>Your last reading assessment found strong progress on sight words. Ten minutes today keeps your streak going.</p>
+            <div class="hero-actions">
+              <button class="btn btn-primary" onclick="showScreen('assessSelect')">Take an assessment</button>
+              <button class="btn btn-ghost" onclick="showScreen('practice')">Go to practice</button>
+            </div>
+          </div>
+          <div class="streak-ring">
+            <svg width="118" height="118" viewBox="0 0 118 118">
+              <circle cx="59" cy="59" r="50" stroke="rgba(255,255,255,.25)" stroke-width="10" fill="none"/>
+              <circle cx="59" cy="59" r="50" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="90" transform="rotate(-90 59 59)"/>
+            </svg>
+            <b style="position:absolute;">12</b>
+            <span style="position:absolute; margin-top:34px;">day streak</span>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--primary-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="M5 20V10M12 20V4M19 20v-7" stroke-linecap="round"/></svg></div>
+            <b>78</b><span>Overall reading score</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#189885" stroke-width="2"><path d="m4 16 5-6 4 3 7-8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <b>+14%</b><span>Improvement this month</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E8930C" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/></svg></div>
+            <b>6</b><span>Assessments completed</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--coral-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E85C5C" stroke-width="2"><path d="M12 6c2.5-3 8-2 8 2.5 0 5-8 9.5-8 9.5s-8-4.5-8-9.5C4 4 9.5 3 12 6Z" stroke-linejoin="round"/></svg></div>
+            <b>Letter reversal</b><span>Top pattern to work on</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="section-head"><h2>Continue where you left off</h2></div>
+            <div class="quick-list">
+              <button class="quick-row" onclick="showScreen('assessSelect')">
+                <div class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 11h6M9 14.5h6" stroke-linecap="round"/></svg></div>
+                <div><b>Take an assessment</b><span>Word recognition, spelling, reading or voice-based</span></div>
+              </button>
+              <button class="quick-row" onclick="showScreen('practice')">
+                <div class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5v-13Z"/></svg></div>
+                <div><b>Practice: blending sounds</b><span>4 exercises · about 8 minutes</span></div>
+              </button>
+              <button class="quick-row" onclick="showScreen('results')">
+                <div class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></div>
+                <div><b>Review last performance report</b><span>Reading assessment · Sept 6</span></div>
+              </button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="section-head"><h2>Recent activity</h2></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--teal);"></div><div><b>Spelling assessment submitted</b><span>Today, 9:12 AM</span></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--primary);"></div><div><b>New recommendation added</b><span>Yesterday</span></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--amber);"></div><div><b>Milestone reached: 10-day streak</b><span>2 days ago</span></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--teal);"></div><div><b>Word recognition score improved +6</b><span>4 days ago</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PROFILE ============ -->
+      <section class="screen" id="screen-profile">
+        <div class="profile-grid">
+          <div class="profile-card">
+            <div class="profile-avatar">AS</div>
+            <h3>Aanya Sharma</h3>
+            <p>Student · Grade 6</p>
+            <button class="btn btn-soft btn-block">Change photo</button>
+            <div class="pref-list">
+              <div class="pref-item"><span>Member since</span><span>Feb 2026</span></div>
+              <div class="pref-item"><span>Assessments taken</span><span>6</span></div>
+              <div class="pref-item"><span>Preferred voice input</span><span>On</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2 style="margin-bottom:18px; font-size:18px;">Personal details</h2>
+            <div class="form-grid">
+              <div class="field"><label>Full name</label><input type="text" value="Aanya Sharma"></div>
+              <div class="field"><label>Age</label><input type="text" value="11"></div>
+              <div class="field"><label>Grade / Level</label><input type="text" value="Grade 6"></div>
+              <div class="field"><label>Preferred language</label><input type="text" value="English"></div>
+              <div class="field full"><label>Email</label><input type="email" value="aanya.sharma@example.com"></div>
+            </div>
+
+            <h2 style="margin:22px 0 6px; font-size:18px;">Reading preferences</h2>
+            <div class="toggle-row"><div><b>Voice-based reading</b><span>Use speech-to-text during assessments</span></div><button class="switch on" onclick="this.classList.toggle('on')"></button></div>
+            <div class="toggle-row"><div><b>Extra time on timed tasks</b><span>Adds 50% more time automatically</span></div><button class="switch on" onclick="this.classList.toggle('on')"></button></div>
+            <div class="toggle-row"><div><b>Weekly progress email</b><span>Sent every Monday to your parent account</span></div><button class="switch" onclick="this.classList.toggle('on')"></button></div>
+
+            <button class="btn btn-primary" style="margin-top:20px;">Save changes</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ASSESSMENT SELECT ============ -->
+      <section class="screen" id="screen-assessSelect">
+        <div class="assess-hero">
+          <div class="assess-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 11h6M9 14.5h6M9 17.5h3.5" stroke-linecap="round"/></svg></div>
+          <div><h1 style="font-size:22px;">Take an assessment</h1><p style="color:var(--ink-soft); font-size:14.5px; margin-top:4px;">Pick a focus area. Each one takes 5–8 minutes and feeds your personal performance report.</p></div>
+        </div>
+
+        <div class="assess-grid">
+          <button class="assess-card" onclick="startAssessment('Word Recognition Assessment', 1)">
+            <div class="ac-icon" style="background:var(--primary-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="M4 18V8l4-4 4 4v10M4 12h8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9h5M15 13h5M15 17h3" stroke-linecap="round"/></svg></div>
+            <h3>Word recognition</h3>
+            <p>Shows familiar and unfamiliar words at a glance to measure sight-word fluency.</p>
+            <div class="ac-foot"><span class="ac-time">≈ 5 min</span><span class="tag tag-primary">3.1</span></div>
+          </button>
+
+          <button class="assess-card" onclick="startAssessment('Spelling Assessment', 2)">
+            <div class="ac-icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#189885" stroke-width="2"><path d="m4 20 3.5-1L18 8.5a1.8 1.8 0 0 0-2.5-2.5L5 16.5 4 20Z" stroke-linejoin="round"/></svg></div>
+            <h3>Spelling</h3>
+            <p>Dictated words and short sentences to map common substitution and sequencing errors.</p>
+            <div class="ac-foot"><span class="ac-time">≈ 6 min</span><span class="tag tag-primary">3.2</span></div>
+          </button>
+
+          <button class="assess-card" onclick="startAssessment('Reading Assessment', 3)">
+            <div class="ac-icon" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E8930C" stroke-width="2"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5v-13Z"/></svg></div>
+            <h3>Reading passage</h3>
+            <p>A short passage measures pace, comprehension and where attention drifts.</p>
+            <div class="ac-foot"><span class="ac-time">≈ 8 min</span><span class="tag tag-primary">3.3</span></div>
+          </button>
+
+          <button class="assess-card" onclick="startAssessment('Voice-Based Reading', 4)">
+            <div class="ac-icon" style="background:var(--coral-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E85C5C" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke-linecap="round"/></svg></div>
+            <h3>Voice-based reading</h3>
+            <p>Read aloud into your microphone — speech-to-text captures pronunciation and hesitation.</p>
+            <div class="ac-foot"><span class="ac-time">≈ 5 min</span><span class="tag tag-coral">Optional · 3.4</span></div>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ ASSESSMENT SESSION ============ -->
+      <section class="screen" id="screen-session">
+        <div class="session-top">
+          <button class="btn btn-ghost" onclick="showScreen('assessSelect')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Exit
+          </button>
+          <div class="progress-track"><div class="progress-fill" id="sessionProgress" style="width:35%;"></div></div>
+          <div class="session-step-label" id="sessionStepLabel">Item 3 of 8</div>
+        </div>
+
+        <div class="passage-card">
+          <span class="tag tag-primary" id="sessionKind" style="margin-bottom:16px; display:inline-flex;">Reading assessment</span>
+          <p id="sessionPassage" style="margin-top:16px;">The quiet <mark>forest</mark> path wound past a slow <mark>river</mark>, where a family of ducks paddled between the reeds. Mira stopped to <mark>listen</mark> before walking on.</p>
+
+          <div class="mic-row">
+            <button class="mic-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke-linecap="round"/></svg></button>
+            <div class="mic-visual" id="micVisual"></div>
+            <div style="margin-left:auto; font-size:13px; color:var(--ink-faint); font-weight:600;">Powered by speech-to-text</div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <div class="session-tools">
+            <div class="tool-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg> 02:14</div>
+            <div class="tool-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6c2.5-3 8-2 8 2.5 0 5-8 9.5-8 9.5s-8-4.5-8-9.5C4 4 9.5 3 12 6Z"/></svg> Text-to-speech</div>
+          </div>
+          <div class="step-dots">
+            <i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+
+        <div class="session-footer">
+          <button class="btn btn-ghost">Skip item</button>
+          <button class="btn btn-primary btn-lg" onclick="showScreen('submit')">Finish &amp; submit assessment</button>
+        </div>
+      </section>
+
+      <!-- ============ SUBMIT ============ -->
+      <section class="screen" id="screen-submit">
+        <div class="submit-wrap">
+          <div class="submit-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 2 11 13" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2 15 22l-4-9-9-4 20-7Z" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h1>Nice work — ready to submit?</h1>
+          <p>You completed 8 of 8 items. Once submitted, LEXIA's AI will analyze your responses and build your performance report.</p>
+          <div class="submit-summary">
+            <div class="summary-chip"><b>8/8</b><span>Items answered</span></div>
+            <div class="summary-chip"><b>06:42</b><span>Time taken</span></div>
+            <div class="summary-chip"><b id="submitKindLabel">Reading</b><span>Assessment type</span></div>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button class="btn btn-ghost" onclick="showScreen('session')">Review answers</button>
+            <button class="btn btn-primary btn-lg" onclick="submitAndAnalyze()">Submit assessment</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ANALYSIS ============ -->
+      <section class="screen" id="screen-analysis">
+        <div class="analysis-wrap">
+          <div class="brain-orb"><div class="brain-orb-inner"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M9 4.5c-2.5 0-4.5 2-4.5 4.2 0 .9.3 1.7.8 2.4-.9.7-1.3 1.8-1.3 2.9 0 2.3 2 4 4.3 4 .3 1.6 1.8 2.8 3.7 2.8V4.5c-.9-1-2-1-3-1Z" stroke="#4C3FC7"/><path d="M15 4.5c2.5 0 4.5 2 4.5 4.2 0 .9-.3 1.7-.8 2.4.9.7 1.3 1.8 1.3 2.9 0 2.3-2 4-4.3 4-.3 1.6-1.8 2.8-3.7 2.8V4.5c.9-1 2-1 3-1Z" stroke="#4C3FC7"/></svg></div></div>
+          <h1>Analyzing your assessment</h1>
+          <p>LEXIA's AI is comparing your responses against reading patterns to build your report.</p>
+          <div class="analysis-checklist" id="checklist">
+            <div class="check-row" data-i="0"><div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Analyzing reading errors</span></div>
+            <div class="check-row" data-i="1"><div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Analyzing spelling errors</span></div>
+            <div class="check-row" data-i="2"><div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Analyzing word recognition</span></div>
+            <div class="check-row" data-i="3"><div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Identifying error patterns</span></div>
+            <div class="check-row" data-i="4"><div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Calculating scores</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ RESULTS ============ -->
+      <section class="screen" id="screen-results">
+        <div class="score-hero">
+          <div class="donut-wrap">
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <circle cx="75" cy="75" r="62" stroke="#EFE9FB" stroke-width="14" fill="none"/>
+              <circle cx="75" cy="75" r="62" stroke="#6D5AE6" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="390" stroke-dashoffset="94" transform="rotate(-90 75 75)"/>
+            </svg>
+            <b>78</b><span>Overall score</span>
+          </div>
+          <div class="score-hero-text">
+            <h2>Reading assessment — Sept 10</h2>
+            <p>Strong comprehension with a steady pace. Most missed items involve reversed letters and blended sounds — both common and very workable with targeted practice.</p>
+            <div style="display:flex; gap:8px; margin-top:14px;">
+              <span class="tag tag-teal">+6 vs last time</span>
+              <span class="tag tag-primary">8 items reviewed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head"><h2>Score breakdown</h2></div>
+        <div class="breakdown-grid">
+          <div class="bd-card">
+            <div class="bd-card-head"><b>Reading fluency</b><span style="font-family:var(--font-display); font-weight:700;">82%</span></div>
+            <div class="bd-bar-track"><div class="bd-bar-fill" style="width:82%; background:var(--primary);"></div></div>
+            <small>Pace and comprehension across the passage</small>
+          </div>
+          <div class="bd-card">
+            <div class="bd-card-head"><b>Spelling accuracy</b><span style="font-family:var(--font-display); font-weight:700;">68%</span></div>
+            <div class="bd-bar-track"><div class="bd-bar-fill" style="width:68%; background:var(--amber);"></div></div>
+            <small>Letter sequencing and phonetic spelling</small>
+          </div>
+          <div class="bd-card">
+            <div class="bd-card-head"><b>Word recognition</b><span style="font-family:var(--font-display); font-weight:700;">85%</span></div>
+            <div class="bd-bar-track"><div class="bd-bar-fill" style="width:85%; background:var(--teal);"></div></div>
+            <small>Speed recognizing familiar sight words</small>
+          </div>
+        </div>
+
+        <div class="section-head"><h2>Error patterns identified</h2></div>
+        <div class="pattern-panel">
+          <div class="pattern-row">
+            <span class="pattern-tag tag tag-coral">Common</span>
+            <p><b>Letter reversal (b/d, p/q)</b> — appeared in 5 of 8 items, mostly at the start of words.</p>
+          </div>
+          <div class="pattern-row">
+            <span class="pattern-tag tag tag-amber">Occasional</span>
+            <p><b>Vowel blending</b> — short-vowel sounds were sometimes merged when reading aloud.</p>
+          </div>
+          <div class="pattern-row">
+            <span class="pattern-tag tag tag-primary">Improving</span>
+            <p><b>Sight-word recall</b> — recognition speed improved 14% compared to your last assessment.</p>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:24px;">
+          <button class="btn btn-primary btn-lg" onclick="showScreen('recommend')">See personalized recommendations</button>
+          <button class="btn btn-ghost" onclick="showScreen('reports')">View all reports</button>
+        </div>
+      </section>
+
+      <!-- ============ RECOMMENDATIONS ============ -->
+      <section class="screen" id="screen-recommend">
+        <div class="section-head"><h2 style="font-size:20px;">Personalized recommendations</h2><span class="tag tag-primary">Based on today's report</span></div>
+        <div class="rec-grid">
+          <div class="rec-card">
+            <div class="rec-icon" style="background:var(--coral-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E85C5C" stroke-width="2"><path d="M6 4v16M18 4v16M6 8h4M14 8h4M6 16h4M14 16h4" stroke-linecap="round"/></svg></div>
+            <div>
+              <h3>Letter-reversal drills</h3>
+              <p>Five-minute daily drills pairing b/d and p/q with tactile tracing tend to cut reversal errors quickly for learners with a similar pattern.</p>
+              <div class="rec-foot"><span class="tag tag-coral">High priority</span><button class="btn btn-soft" style="padding:7px 14px; font-size:13px;">Start drill</button></div>
+            </div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-icon" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E8930C" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9 12h6M9 9h6M9 15h4" stroke-linecap="round"/></svg></div>
+            <div>
+              <h3>Short-vowel sound blending</h3>
+              <p>Guided audio exercises that slow down blended vowel sounds so they're easier to separate while reading aloud.</p>
+              <div class="rec-foot"><span class="tag tag-amber">Medium priority</span><button class="btn btn-soft" style="padding:7px 14px; font-size:13px;">Start drill</button></div>
+            </div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#189885" stroke-width="2"><path d="M4 18V8l4-4 4 4v10M4 12h8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div>
+              <h3>Sight-word speed rounds</h3>
+              <p>You're improving fast here — a lighter, twice-weekly review keeps recall sharp without adding pressure.</p>
+              <div class="rec-foot"><span class="tag tag-teal">Keep it up</span><button class="btn btn-soft" style="padding:7px 14px; font-size:13px;">Start drill</button></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:22px;"><button class="btn btn-primary btn-lg" onclick="showScreen('practice')">Go to practice exercises</button></div>
+      </section>
+
+      <!-- ============ PRACTICE ============ -->
+      <section class="screen" id="screen-practice">
+        <div class="section-head"><h2 style="font-size:20px;">Practice exercises</h2></div>
+        <div class="filter-row">
+          <button class="filter-chip active">All</button>
+          <button class="filter-chip">Letter reversal</button>
+          <button class="filter-chip">Vowel blending</button>
+          <button class="filter-chip">Sight words</button>
+          <button class="filter-chip">Reading fluency</button>
+        </div>
+        <div class="practice-grid">
+          <div class="practice-card">
+            <div class="practice-thumb" style="background:var(--coral-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E85C5C" stroke-width="1.8"><path d="M6 4v16M18 4v16M6 8h4M14 8h4M6 16h4M14 16h4"/></svg></div>
+            <div class="practice-body"><h3>b/d flip cards</h3><p>Trace, say, sort — 12 rounds targeting reversal pairs.</p><div class="practice-meta"><span>8 min</span><span class="tag tag-coral">Recommended</span></div></div>
+          </div>
+          <div class="practice-card">
+            <div class="practice-thumb" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E8930C" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M9 12h6M9 9h6M9 15h4"/></svg></div>
+            <div class="practice-body"><h3>Vowel sound match</h3><p>Listen and match short-vowel sounds to the right word.</p><div class="practice-meta"><span>6 min</span><span class="tag tag-amber">Recommended</span></div></div>
+          </div>
+          <div class="practice-card">
+            <div class="practice-thumb" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#189885" stroke-width="1.8"><path d="M4 18V8l4-4 4 4v10M4 12h8"/></svg></div>
+            <div class="practice-body"><h3>Sight word sprint</h3><p>Beat your best time recognizing 40 common words.</p><div class="practice-meta"><span>4 min</span><span>New high score</span></div></div>
+          </div>
+          <div class="practice-card">
+            <div class="practice-thumb" style="background:var(--primary-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="1.8"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5v-13Z"/></svg></div>
+            <div class="practice-body"><h3>Guided passage read</h3><p>Read along with highlighted, paced text-to-speech.</p><div class="practice-meta"><span>10 min</span><span>Fluency</span></div></div>
+          </div>
+          <div class="practice-card">
+            <div class="practice-thumb" style="background:var(--coral-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E85C5C" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+            <div class="practice-body"><h3>Read-aloud check-in</h3><p>Record a short passage; get instant pronunciation feedback.</p><div class="practice-meta"><span>5 min</span><span>Voice-based</span></div></div>
+          </div>
+          <div class="practice-card">
+            <div class="practice-thumb" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="#E8930C" stroke-width="1.8"><path d="m4 20 3.5-1L18 8.5a1.8 1.8 0 0 0-2.5-2.5L5 16.5 4 20Z"/></svg></div>
+            <div class="practice-body"><h3>Spelling patterns</h3><p>Build words from sound chunks instead of single letters.</p><div class="practice-meta"><span>7 min</span><span>Spelling</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PROGRESS ============ -->
+      <section class="screen" id="screen-progress">
+        <div class="section-head"><h2 style="font-size:20px;">Track progress</h2></div>
+        <div class="progress-panel">
+          <h3 style="font-size:15px; margin-bottom:16px;">Score trend — last 6 assessments</h3>
+          <svg width="100%" height="200" viewBox="0 0 640 200" preserveAspectRatio="none">
+            <line x1="0" y1="40" x2="640" y2="40" stroke="#E3DCF6" stroke-width="1"/>
+            <line x1="0" y1="90" x2="640" y2="90" stroke="#E3DCF6" stroke-width="1"/>
+            <line x1="0" y1="140" x2="640" y2="140" stroke="#E3DCF6" stroke-width="1"/>
+            <polyline points="20,150 130,130 240,120 350,95 460,70 580,52" fill="none" stroke="#6D5AE6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="20,170 130,158 240,150 350,132 460,118 580,102" fill="none" stroke="#189885" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <circle cx="580" cy="52" r="6" fill="#6D5AE6"/>
+            <circle cx="580" cy="102" r="6" fill="#189885"/>
+          </svg>
+          <div class="progress-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--primary);"></span>Overall score</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--teal);"></span>Word recognition</div>
+          </div>
+        </div>
+
+        <div class="section-head"><h2 style="font-size:18px;">Milestones</h2></div>
+        <div class="milestone-grid">
+          <div class="milestone-card"><div class="m-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="m5 13 4 4L19 7"/></svg></div><b>First assessment</b><span>Completed</span></div>
+          <div class="milestone-card"><div class="m-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="m5 13 4 4L19 7"/></svg></div><b>7-day streak</b><span>Completed</span></div>
+          <div class="milestone-card"><div class="m-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><path d="m5 13 4 4L19 7"/></svg></div><b>Score above 75</b><span>Completed</span></div>
+          <div class="milestone-card locked"><div class="m-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4C3FC7" stroke-width="2"><rect x="6" y="10" width="12" height="9" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><b>30-day streak</b><span>18 days to go</span></div>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="screen" id="screen-reports">
+        <div class="section-head"><h2 style="font-size:20px;">Your reports</h2><span class="tag tag-primary">6 total</span></div>
+        <div class="report-table">
+          <div class="report-row head"><span>Assessment</span><span>Date</span><span>Score</span><span>Trend</span><span></span></div>
+          <div class="report-row"><div><b>Reading passage</b><span>8 items</span></div><span>Sept 10, 2026</span><span style="font-weight:700;">78</span><span class="tag tag-teal">+6</span><button class="dl-btn" onclick="showScreen('results')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>View</button></div>
+          <div class="report-row"><div><b>Spelling</b><span>10 items</span></div><span>Sept 3, 2026</span><span style="font-weight:700;">64</span><span class="tag tag-amber">+2</span><button class="dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>View</button></div>
+          <div class="report-row"><div><b>Word recognition</b><span>15 items</span></div><span>Aug 27, 2026</span><span style="font-weight:700;">85</span><span class="tag tag-teal">+9</span><button class="dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>View</button></div>
+          <div class="report-row"><div><b>Voice-based reading</b><span>6 items</span></div><span>Aug 20, 2026</span><span style="font-weight:700;">71</span><span class="tag tag-coral">-3</span><button class="dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>View</button></div>
+          <div class="report-row"><div><b>Reading passage</b><span>8 items</span></div><span>Aug 13, 2026</span><span style="font-weight:700;">72</span><span class="tag tag-teal">+4</span><button class="dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>View</button></div>
+          <div class="report-row"><div><b>Spelling</b><span>10 items</span></div><span>Aug 6, 2026</span><span style="font-weight:700;">61</span><span class="tag tag-primary">First</span><button class="dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>View</button></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- Auth tabs ----------
+  function switchAuthTab(which){
+    document.getElementById('tabLogin').classList.toggle('active', which==='login');
+    document.getElementById('tabRegister').classList.toggle('active', which==='register');
+    document.getElementById('loginForm').style.display = which==='login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = which==='register' ? 'block' : 'none';
+    document.getElementById('authAltText').innerHTML = which==='login'
+      ? 'New to LEXIA? <a href="#" onclick="switchAuthTab(\'register\'); return false;">Create an account</a>'
+      : 'Already have an account? <a href="#" onclick="switchAuthTab(\'login\'); return false;">Log in</a>';
+  }
+
+  function goToApp(e){
+    e.preventDefault();
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'flex';
+    showScreen('dashboard');
+    return false;
+  }
+
+  function logOut(){
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('authScreen').style.display = 'block';
+    switchAuthTab('login');
+  }
+
+  // ---------- Screen routing ----------
+  const crumbMap = {
+    dashboard:  ['Overview', 'Welcome back, Aanya'],
+    profile:    ['Overview', 'Your profile'],
+    assessSelect: ['Assessment', 'Take an assessment'],
+    session:    ['Assessment', 'Assessment in progress'],
+    submit:     ['Assessment', 'Submit assessment'],
+    analysis:   ['Assessment', 'AI performance analysis'],
+    results:    ['Insights', 'Performance report'],
+    recommend:  ['Insights', 'Personalized recommendations'],
+    practice:   ['Insights', 'Practice exercises'],
+    progress:   ['Insights', 'Track progress'],
+    reports:    ['Insights', 'Your reports'],
+  };
+
+  function showScreen(name){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('screen-' + name);
+    if(target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === name));
+
+    const c = crumbMap[name];
+    if(c){
+      document.getElementById('crumbEyebrow').textContent = c[0];
+      document.getElementById('crumbTitle').textContent = c[1];
+    }
+    toggleSidebar(false);
+    window.scrollTo({top:0, behavior:'instant'});
+    document.querySelector('.content').scrollTop = 0;
+  }
+
+  function startAssessment(label, stepNum){
+    document.getElementById('sessionKind').textContent = label;
+    document.getElementById('submitKindLabel').textContent = label.split(' ')[0];
+    showScreen('session');
+  }
+
+  function submitAndAnalyze(){
+    showScreen('analysis');
+    const rows = document.querySelectorAll('#checklist .check-row');
+    rows.forEach(r => r.classList.remove('done','active'));
+    let i = 0;
+    function step(){
+      if(i > 0) rows[i-1].classList.remove('active');
+      if(i < rows.length){
+        rows[i].classList.add('active');
+        setTimeout(()=>{
+          rows[i].classList.remove('active');
+          rows[i].classList.add('done');
+          i++;
+          if(i < rows.length){ step(); } else {
+            setTimeout(()=> showScreen('results'), 550);
+          }
+        }, 620);
+      }
+    }
+    step();
+  }
+
+  // ---------- Mic waveform (decorative) ----------
+  (function buildMic(){
+    const el = document.getElementById('micVisual');
+    if(!el) return;
+    for(let i=0;i<22;i++){
+      const bar = document.createElement('i');
+      const h = 6 + Math.round(Math.sin(i*0.9)*8 + 10);
+      bar.style.height = h + 'px';
+      bar.style.opacity = 0.35 + (i%5)*0.13;
+      el.appendChild(bar);
+    }
+  })();
+
+  // ---------- Mobile sidebar ----------
+  function toggleSidebar(force){
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('overlay');
+    const open = force === undefined ? !sb.classList.contains('open') : force;
+    sb.classList.toggle('open', open);
+    ov.classList.toggle('open', open);
+  }
+
+  // ---------- Reading settings ----------
+  function toggleSettings(){
+    document.getElementById('settingsPop').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e){
+    const pop = document.getElementById('settingsPop');
+    if(!pop) return;
+    if(!pop.contains(e.target) && !e.target.closest('.icon-btn')){
+      pop.classList.remove('open');
+    }
+  });
+  function setTextSize(v, btn){
+    document.documentElement.style.setProperty('--step-size', v);
+    document.querySelectorAll('#segSize button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function setTracking(v, btn){
+    document.documentElement.style.setProperty('--step-track', v + 'em');
+    document.querySelectorAll('#segTrack button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function setTint(hex, el){
+    document.documentElement.style.setProperty('--bg-tint', hex);
+    document.querySelectorAll('.tint-swatch').forEach(s=>s.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>
